@@ -31,7 +31,7 @@ public class RepositoryGitHubView {
                 current++;
                 System.out.print(e);
                 try {
-                    Thread.sleep(2000L);
+                    Thread.sleep(500L);
                 } catch (InterruptedException e1) {
                     System.out.print(e1);
                 }
