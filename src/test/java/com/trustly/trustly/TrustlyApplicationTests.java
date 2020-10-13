@@ -1,13 +1,28 @@
 package com.trustly.trustly;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
-class TrustlyApplicationTests {
+@AutoConfigureMockMvc
+public class TrustlyApplicationTests {
+
+	@Autowired
+	private MockMvc mockMvc;
 
 	@Test
-	void contextLoads() {
+	public void shouldReturnDefaultMessage() throws Exception {
+		this.mockMvc
+		.perform(get("/repository/?profile=codeschool-projects&repository=HTMLPortfolioProject"))
+		.andDo(print())
+		.andExpect(status()
+		.isOk());
 	}
-
 }

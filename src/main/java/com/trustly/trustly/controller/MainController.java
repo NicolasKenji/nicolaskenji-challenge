@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class HelloController {
+public class MainController {
     static String baseUrl = "https://github.com";
     @GetMapping(value = "/")
     public String hello() {
@@ -27,4 +27,5 @@ public class HelloController {
         String json = RepositoryGitHubView.listClassFileToJson(filesGroups);
         return json;
     }
+    
 }
