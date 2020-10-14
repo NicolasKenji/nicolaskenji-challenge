@@ -38,7 +38,7 @@ Requirements:
 
 ·         You must deploy your solution to a cloud provider like Amazon AWS or Heroku and send us the link to access it. It’s a plus if you publish a Docker image with your application (including its dependencies) in a registry like Docker Hub and let us know how to get it.  
 
-## 2. API Response
+## 2. API Response (HEROKU)
 
 Request: https://nicolaskenji-trustly.herokuapp.com/repository/?profile={profile}&repository={repository}
 Request Example:  https://nicolaskenji-trustly.herokuapp.com/repository/?profile=kewinnery&repository=uclCoin
