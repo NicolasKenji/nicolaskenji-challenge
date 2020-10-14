@@ -18,33 +18,18 @@ import com.trustly.trustly.model.FileGroup;
 public class RepositoryService {
     static String baseUrl = "https://github.com";
 
-    public static String getFileGroupJson(String profile, String repository){
-        List<File> lista = getFiles(baseUrl+"/"+profile+"/"+repository);
+    public static String getFileGroupJson(String profile, String repository) {
+        List<File> lista = getFiles(baseUrl + "/" + profile + "/" + repository);
         List<FileGroup> filesGroups = groupBy(lista);
         return listClassFileToJson(filesGroups);
     }
+
     public static List<File> getFiles(String url) {
         List<File> files = new ArrayList<>();
         Document doc = null;
-        final Integer attempts = 20;
-        Integer current = 0;
-        // GET HTML CODE OF GITHUB REPOSITORY
-        do {
-            try {
-                doc = Jsoup.connect(url).get();
-            } catch (HttpStatusException e) {
-                current++;
-                System.out.print(e);
-                try {
-                    Thread.sleep(200);
-                } catch (InterruptedException e1) {
-                    System.out.print(e1);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } while (doc == null && current < attempts);
 
+        // GET HTML CODE OF GITHUB REPOSITORY
+        doc = getDoc(url);
         // GET DIV CLASS ITEMS OF REPOSITORY
         try {
             Elements divs = doc
@@ -87,13 +72,7 @@ public class RepositoryService {
             // ADDING LINES AND BYTES FOR EACH GROUPED FILE
             for (File file : entrada.getValue()) {
                 totalNumberLines = totalNumberLines + file.getLines();
-
-                if (file.getUnidade().equals("Bytes")) {
-                    totalNumberbytes = totalNumberbytes + file.getSize();
-                } else if (file.getUnidade().equals("KB")) {
-                    totalNumberbytes = totalNumberbytes + (file.getSize() * 1000);
-                }
-
+                totalNumberbytes = sumBytes(file, totalNumberbytes);
             }
             FileGroup filegroup = new FileGroup(extension, totalNumberLines, totalNumberbytes);
             filesGroups.add(filegroup);
@@ -106,5 +85,40 @@ public class RepositoryService {
     public static String listClassFileToJson(List<FileGroup> list) {
         Gson gson = new Gson();
         return gson.toJson(list);
+    }
+
+    public static Double sumBytes(File file, Double totalNumberbytes) {
+        if (file.getUnidade().equals("Bytes")) {
+            totalNumberbytes = totalNumberbytes + file.getSize();
+        } else if (file.getUnidade().equals("KB")) {
+            totalNumberbytes = totalNumberbytes + (file.getSize() * 1024);
+        } else if (file.getUnidade().equals("MB")) {
+            totalNumberbytes = totalNumberbytes + (file.getSize() * 1024 * 1024);
+        } else if (file.getUnidade().equals("GB")) {
+            totalNumberbytes = totalNumberbytes + (file.getSize() * 1024 * 1024 * 1024);
+        }
+        return totalNumberbytes;
+    }
+
+    public static Document getDoc(String url) {
+        Document doc = null;
+        final Integer attempts = 20;
+        Integer current = 0;
+        do {
+            try {
+                doc = Jsoup.connect(url).get();
+            } catch (HttpStatusException e) {
+                current++;
+                System.out.print(e);
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e1) {
+                    System.out.print(e1);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } while (doc == null && current < attempts);
+        return doc;
     }
 }

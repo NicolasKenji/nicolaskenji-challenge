@@ -1,11 +1,8 @@
 package com.trustly.trustly.services;
 
-import org.jsoup.HttpStatusException;
-import org.jsoup.Jsoup;
+import com.trustly.trustly.model.File;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
-import java.io.IOException;
-import com.trustly.trustly.model.File;
 
 public class FileService {
     
@@ -19,25 +16,8 @@ public class FileService {
         String unidade = "";
         String texto = null;
         Document doc = null;
-        final Integer attempts = 20;
-        Integer current = 0;
         // GET HTML CODE OF GITHUB FILE
-        do {
-            try {
-                doc = Jsoup.connect(file.getUrl()).get();
-            } catch (HttpStatusException e) {
-                current++;
-                System.out.print(e);
-                try {
-                    Thread.sleep(200);
-                } catch (InterruptedException e1) {
-                    System.out.print(e1);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } while (doc == null && current < attempts);
-
+        doc = RepositoryService.getDoc(url);
         Elements divs = doc.select("div.text-mono.f6.flex-auto.pr-3.flex-order-2.flex-md-order-1.mt-2.mt-md-0");
         texto = divs.text();
         array = texto.split(" ");
@@ -50,7 +30,7 @@ public class FileService {
                 size = Float.parseFloat(array[4]);
                 unidade = array[5].toString();
             }
-            // HERE FILES WITHOUT LINES
+            // HERE FILES WITH 0 LINES
         } catch (Exception e) {
             size = Float.parseFloat(array[0]);
             unidade = array[1].toString();
