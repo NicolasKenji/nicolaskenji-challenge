@@ -1,4 +1,4 @@
-package com.trustly.trustly.view;
+package com.trustly.trustly.services;
 
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
@@ -12,14 +12,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import com.google.gson.Gson;
-import com.trustly.trustly.model.ClassFileGitHub;
-import com.trustly.trustly.model.ClassFileGroup;
+import com.trustly.trustly.model.File;
+import com.trustly.trustly.model.FileGroup;
 
-public class RepositoryGitHubView {
+public class RepositoryService {
     static String baseUrl = "https://github.com";
 
-    public static List<ClassFileGitHub> getFiles(String url) {
-        List<ClassFileGitHub> files = new ArrayList<>();
+    public static String getFileGroupJson(String profile, String repository){
+        List<File> lista = getFiles(baseUrl+"/"+profile+"/"+repository);
+        List<FileGroup> filesGroups = groupBy(lista);
+        return listClassFileToJson(filesGroups);
+    }
+    public static List<File> getFiles(String url) {
+        List<File> files = new ArrayList<>();
         Document doc = null;
         final Integer attempts = 20;
         Integer current = 0;
@@ -53,12 +58,12 @@ public class RepositoryGitHubView {
                 String url_sub = baseUrl + href;
                 // IF IS DIRECTORY => RECURSIVE THIS FUNCTION AND RECEIVE LIST OF FILES
                 if (label.equals("Directory")) {
-                    for (ClassFileGitHub file : getFiles(url_sub)) {
+                    for (File file : getFiles(url_sub)) {
                         files.add(file);
                     }
                     // ELSE IS A FILE => CREATE A FILE
                 } else {
-                    files.add(FileGitHubView.getFile(name, url_sub));
+                    files.add(FileService.getFile(name, url_sub));
                 }
             }
         } catch (Exception e) {
@@ -67,20 +72,20 @@ public class RepositoryGitHubView {
         return files;
     }
 
-    public static List<ClassFileGroup> groupBy(List<ClassFileGitHub> lista) {
-        Map<String, List<ClassFileGitHub>> mapFileByExtension;
-        List<ClassFileGroup> filesGroups = new ArrayList<>();
+    public static List<FileGroup> groupBy(List<File> lista) {
+        Map<String, List<File>> mapFileByExtension;
+        List<FileGroup> filesGroups = new ArrayList<>();
 
         // GROUP OBJECTS IN JAVA 8
         // OBJECT FILE BY EXTENSION
-        mapFileByExtension = lista.stream().collect(Collectors.groupingBy(ClassFileGitHub::getExtension));
+        mapFileByExtension = lista.stream().collect(Collectors.groupingBy(File::getExtension));
 
-        for (Map.Entry<String, List<ClassFileGitHub>> entrada : mapFileByExtension.entrySet()) {
+        for (Map.Entry<String, List<File>> entrada : mapFileByExtension.entrySet()) {
             String extension = entrada.getKey();
             Integer totalNumberLines = 0;
             Double totalNumberbytes = 0.00;
             // ADDING LINES AND BYTES FOR EACH GROUPED FILE
-            for (ClassFileGitHub file : entrada.getValue()) {
+            for (File file : entrada.getValue()) {
                 totalNumberLines = totalNumberLines + file.getLines();
 
                 if (file.getUnidade().equals("Bytes")) {
@@ -90,7 +95,7 @@ public class RepositoryGitHubView {
                 }
 
             }
-            ClassFileGroup filegroup = new ClassFileGroup(extension, totalNumberLines, totalNumberbytes);
+            FileGroup filegroup = new FileGroup(extension, totalNumberLines, totalNumberbytes);
             filesGroups.add(filegroup);
         }
         // RETURN LIST OF FILES GROUPEDS
@@ -98,7 +103,7 @@ public class RepositoryGitHubView {
     }
 
     // TO JSON THE LIST OF FILES GROUPEDS
-    public static String listClassFileToJson(List<ClassFileGroup> list) {
+    public static String listClassFileToJson(List<FileGroup> list) {
         Gson gson = new Gson();
         return gson.toJson(list);
     }
